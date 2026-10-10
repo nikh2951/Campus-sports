@@ -69,9 +69,19 @@ public class AuthService {
                 if (!isVerified) {
                     throw new BadRequestException("Google account email is not verified by Google.");
                 }
+
+                // Verify OAuth audience matches configured Google Client ID if specified
+                String aud = (String) body.get("aud");
+                if (googleClientId != null && !googleClientId.isBlank()) {
+                    if (!googleClientId.trim().equals(aud)) {
+                        throw new BadRequestException("Google OAuth Security Warning: Token audience does not match configured Google Client ID.");
+                    }
+                }
             } else {
                 throw new BadRequestException("Google OAuth Error: Failed to verify Google ID Token with Google servers.");
             }
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            throw new BadRequestException("Invalid or expired Google ID Token. Please sign in again.");
         } catch (BadRequestException bre) {
             throw bre;
         } catch (Exception e) {

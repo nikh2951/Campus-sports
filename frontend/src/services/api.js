@@ -1,6 +1,20 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+  // Production fallback for deployed environments (e.g. Vercel)
+  if (import.meta.env.PROD) {
+    return 'https://campus-sports-production.up.railway.app/api';
+  }
+  // Local development default
+  return 'http://localhost:8080/api';
+};
+
+export const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +22,10 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Health check API
+export const getHealth = () =>
+  api.get('/health');
 
 // Auth APIs
 export const verifyGoogleToken = (idToken, devEmail = null, devName = null) =>

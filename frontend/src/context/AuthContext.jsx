@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [config, setConfig] = useState({ approvedDomain: 'campus.edu' });
+  const [config, setConfig] = useState({ approvedDomain: 'anurag.edu.in' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -81,7 +81,12 @@ export const AuthProvider = ({ children }) => {
         admin: data.administrator,
       };
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Google Authentication failed';
+      let msg = err.response?.data?.message || err.message;
+      if (!err.response && (err.message === 'Network Error' || !err.status)) {
+        msg = 'Unable to reach backend server. Please verify network connectivity and backend URL.';
+      } else if (!msg) {
+        msg = 'Google Authentication failed. Please try again.';
+      }
       setError(msg);
       setLoading(false);
       return { success: false, message: msg };
